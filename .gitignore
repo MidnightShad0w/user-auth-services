@@ -1,0 +1,65 @@
+# Maven target directories
+**/target/
+
+# Compiled class files
+**/*.class
+
+# Log files
+**/*.log
+
+# IntelliJ IDEA files
+*.iml
+.idea/
+.idea_modules/
+
+# IntelliJ project-specific workspace file
+*.iws
+
+# Temporary files
+*.swp
+*~
+*.tmp
+
+# Maven-specific files
+.mvn/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+
+# Eclipse files
+.project
+.classpath
+.settings/
+
+# VS Code files
+.vscode/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Logs
+**/logs/
+
+# Docker files and folders
+docker-compose.override.yml
+docker-compose.yml
+**/db_data/
+
+# Environment variables
+.env
+
+# JetBrains Rider .idea folder (for Docker support in Rider)
+.idea/
+
+# Generated Maven site
+**/target/site/
+
+# Ignore specific service files (optional, if needed)
+score/target/
+auth/target/
+composition/target/

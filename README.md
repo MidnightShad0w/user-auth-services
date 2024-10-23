@@ -1,0 +1,1 @@
+The educational project includes three services where the services communicate using http

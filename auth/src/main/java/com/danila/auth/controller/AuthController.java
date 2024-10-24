@@ -1,6 +1,7 @@
 package com.danila.auth.controller;
 
 import com.danila.auth.service.AuthService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,6 +11,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -23,7 +25,7 @@ public class AuthController {
     public Mono<ResponseEntity<Boolean>> login(@RequestBody Map<String, String> credentials) {
         String login = credentials.get("login");
         String password = credentials.get("password");
-
+        log.warn("Запрос auth с логином и паролем: " + login + " " + password);
         return authService.authorize(login, password)
                 .map(isAuthorized -> ResponseEntity.ok(isAuthorized));
     }

@@ -19,9 +19,6 @@ public class CompositionController {
 
     private final CompositionService compositionService;
 
-    @Value("${score.threshold}")
-    private float scoreThreshold;
-
     public CompositionController(CompositionService compositionService) {
         this.compositionService = compositionService;
     }
@@ -30,17 +27,17 @@ public class CompositionController {
     public Mono<ResponseEntity<String>> authorizeUser(@RequestBody Map<String, String> credentials) {
         String login = credentials.get("login");
         String password = credentials.get("password");
+        float scoreThreshold = compositionService.getScoreThreshold();
 
         return compositionService.getScoreForLogin(login)
                 .flatMap(score -> {
                     if (score < scoreThreshold) {
+                        log.warn("Not enough score... its only - " + score + " but u need - " + scoreThreshold);
                         return Mono.just(ResponseEntity.status(403).body("Authorization denied due to low score"));
                     } else {
                         return compositionService.authorize(login, password)
                                 .flatMap(authResult -> {
                                     if (authResult) {
-                                        //todo: почему не приходит score
-
                                         log.info("Authorization on score passing -- login:" + login + " and password:" + password + "--- score=" + score);
                                         return Mono.just(ResponseEntity.ok("Authorization successful"));
                                     } else {

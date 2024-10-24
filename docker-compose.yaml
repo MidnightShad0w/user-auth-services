@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-  postgres:
+  postgres-score:
     image: postgres:17
     container_name: postgres_score
     environment:
@@ -8,10 +8,23 @@ services:
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: score_db
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_score_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+  postgres-auth:
+    image: postgres:17
+    container_name: postgres_auth
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: auth_db
+    volumes:
+      - postgres_auth_data:/var/lib/postgresql/data
+    ports:
+      - "5431:5432"
 
 volumes:
-  postgres_data:
+  postgres_score_data:
+    driver: local
+  postgres_auth_data:
     driver: local

@@ -7,6 +7,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import io.github.cdimascio.dotenv.Dotenv;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Slf4j
 @Service
 public class CompositionService {
@@ -16,6 +19,8 @@ public class CompositionService {
 
     @Value("${score.service.url}")
     private String scoreServiceUrl;
+    @Value("${auth.service.url}")
+    private String authServiceUrl;
 
     public CompositionService(WebClient.Builder webClientBuilder) {
         this.webClientBuilder = webClientBuilder;
@@ -41,7 +46,16 @@ public class CompositionService {
 
 
     public Mono<Boolean> authorize(String login, String password) {
-        // todo:отправка запроса в auth
-        return Mono.just(true);
+        Map<String, String> credentials = new HashMap<>();
+        credentials.put("login", login);
+        credentials.put("password", password);
+
+        return webClientBuilder.build()
+                .post()
+                .uri(authServiceUrl + "/auth/login")
+                .bodyValue(credentials)
+                .retrieve()
+                .bodyToMono(Boolean.class)
+                .onErrorReturn(false);
     }
 }

@@ -11,7 +11,6 @@ public class User {
     private String login;
     private Float score;
 
-    // Геттеры и сеттеры
     public Long getId() {
         return id;
     }

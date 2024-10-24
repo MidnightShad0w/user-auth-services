@@ -39,7 +39,9 @@ public class CompositionController {
                         return compositionService.authorize(login, password)
                                 .flatMap(authResult -> {
                                     if (authResult) {
-                                        log.info("Authorization successful -- login:" + login + " and password:" + password + "--- score=" + score);
+                                        //todo: почему не приходит score
+
+                                        log.info("Authorization on score passing -- login:" + login + " and password:" + password + "--- score=" + score);
                                         return Mono.just(ResponseEntity.ok("Authorization successful"));
                                     } else {
                                         return Mono.just(ResponseEntity.status(403).body("Invalid credentials"));
@@ -48,11 +50,12 @@ public class CompositionController {
                     }
                 })
                 .onErrorResume(e -> {
+                    log.error("Error calling score service", e);
                     // Если сервис score отвечает ошибкой, считаем, что score "хороший"
                     return compositionService.authorize(login, password)
                             .flatMap(authResult -> {
                                 if (authResult) {
-                                    log.error("Authorization successful -- login:" + login + " and password:" + password);
+                                    log.error("Authorization on error -- login:" + login + " and password:" + password);
                                     return Mono.just(ResponseEntity.ok("Authorization successful"));
                                 } else {
                                     return Mono.just(ResponseEntity.status(403).body("Invalid credentials"));

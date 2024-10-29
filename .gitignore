@@ -1,5 +1,5 @@
 # Maven target directories
-**/target/
+
 
 # Compiled class files
 **/*.class
@@ -58,6 +58,3 @@ docker-compose.yml
 **/target/site/
 
 # Ignore specific service files (optional, if needed)
-score/target/
-auth/target/
-composition/target/

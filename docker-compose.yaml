@@ -85,7 +85,7 @@ services:
     volumes:
       - postgres_auth_data:/var/lib/postgresql/data
     ports:
-      - "5431:5432"
+      - "5431:5431"
     networks:
       - app-network
 

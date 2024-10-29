@@ -50,8 +50,6 @@ docker-compose.override.yml
 docker-compose.yml
 **/db_data/
 
-# Environment variables
-.env
 
 # JetBrains Rider .idea folder (for Docker support in Rider)
 .idea/

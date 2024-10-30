@@ -27,4 +27,10 @@ with body -
 "password": "password1"
 }
 
-After posting any of this requests check logs in docker 
+After posting any of this requests check logs in docker
+
+If you want to rebuild project use these commands:
+
+>docker-compose down --volumes
+
+>docker-compose up --build -d

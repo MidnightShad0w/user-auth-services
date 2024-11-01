@@ -2,6 +2,8 @@ package com.danila.composition.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -36,16 +38,22 @@ public class CompositionService {
         return webClientBuilder.build()
                 .get()
                 .uri(scoreServiceUrl + "/score?login=" + login)
+                .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .bodyToMono(Float.class)
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Float>>() {})
+                .map(response -> {
+                    Float score = response.get("score");
+                    log.warn("Получен ответ от score_service: " + score);
+                    return score;
+                })
                 .onErrorResume(e -> {
-                    log.error("Error calling score service for login: " + login, e);
+                    log.error("Ошибка при вызове score_service для login: " + login, e);
                     return Mono.error(e);
                 });
     }
 
-
     public Mono<Boolean> authorize(String login, String password) {
+        log.warn("Проверка авторизации для логина: " + login);
         Map<String, String> credentials = new HashMap<>();
         credentials.put("login", login);
         credentials.put("password", password);
@@ -55,7 +63,10 @@ public class CompositionService {
                 .uri(authServiceUrl + "/auth/login")
                 .bodyValue(credentials)
                 .retrieve()
-                .bodyToMono(Boolean.class)
+                .bodyToMono(Map.class) // Изменено на Map
+                .map(response -> (Boolean) response.get("isAuthorized")) // Извлечение значения
+                .doOnNext(isAuthorized -> log.info("Ответ от сервиса авторизации: " + isAuthorized))
+                .doOnError(error -> log.error("Ошибка при авторизации: ", error))
                 .onErrorReturn(false);
     }
 }

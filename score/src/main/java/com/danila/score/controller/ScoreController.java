@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
+
 @RestController
 public class ScoreController {
     private final ScoreService scoreService;
@@ -16,9 +18,10 @@ public class ScoreController {
     }
 
     @GetMapping("/score")
-    public Mono<ResponseEntity<Float>> getScore(@RequestParam String login) {
+    public Mono<Map<String, Float>> getScore(@RequestParam String login) {
         return scoreService.getUserScore(login)
-                .map(score -> ResponseEntity.ok(score))
-                .defaultIfEmpty(ResponseEntity.notFound().build());
+                .map(score -> Map.of("score", score))
+                .defaultIfEmpty(Map.of("score", 0.0f));
     }
 }
+

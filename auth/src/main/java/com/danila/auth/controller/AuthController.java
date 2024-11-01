@@ -22,11 +22,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Mono<ResponseEntity<Boolean>> login(@RequestBody Map<String, String> credentials) {
+    public Mono<ResponseEntity<Map<String, Boolean>>> login(@RequestBody Map<String, String> credentials) {
         String login = credentials.get("login");
         String password = credentials.get("password");
         log.warn("Запрос auth с логином и паролем: " + login + " " + password);
+
         return authService.authorize(login, password)
-                .map(isAuthorized -> ResponseEntity.ok(isAuthorized));
+                .map(isAuthorized -> ResponseEntity.ok(Map.of("isAuthorized", isAuthorized)))
+                .defaultIfEmpty(ResponseEntity.status(403).body(Map.of("isAuthorized", false)));
     }
 }
+

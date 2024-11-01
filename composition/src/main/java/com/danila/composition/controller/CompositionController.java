@@ -24,7 +24,7 @@ public class CompositionController {
     }
 
     @PostMapping("/authorize")
-    public Mono<ResponseEntity<String>> authorizeUser(@RequestBody Map<String, String> credentials) {
+    public Mono<ResponseEntity<Map<String, String>>> authorizeUser(@RequestBody Map<String, String> credentials) {
         String login = credentials.get("login");
         String password = credentials.get("password");
         float scoreThreshold = compositionService.getScoreThreshold();
@@ -32,32 +32,37 @@ public class CompositionController {
         return compositionService.getScoreForLogin(login)
                 .flatMap(score -> {
                     if (score < scoreThreshold) {
-                        log.warn("Not enough score... its only - " + score + " but u need - " + scoreThreshold);
-                        return Mono.just(ResponseEntity.status(403).body("Authorization denied due to low score"));
+                        log.warn("Недостаточно очков: " + score + ", требуется: " + scoreThreshold);
+                        return Mono.just(ResponseEntity.status(403)
+                                .body(Map.of("message", "Authorization denied due to low score")));
                     } else {
                         return compositionService.authorize(login, password)
                                 .flatMap(authResult -> {
                                     if (authResult) {
-                                        log.info("Authorization on score passing -- login:" + login + " and password:" + password + "--- score=" + score);
-                                        return Mono.just(ResponseEntity.ok("Authorization successful"));
+                                        log.info("Авторизация успешна для логина: " + login);
+                                        return Mono.just(ResponseEntity.ok(Map.of("message", "Authorization successful")));
                                     } else {
-                                        return Mono.just(ResponseEntity.status(403).body("Invalid credentials"));
+                                        log.warn("Авторизация не удалась для логина: " + login);
+                                        return Mono.just(ResponseEntity.status(403)
+                                                .body(Map.of("message", "Invalid credentials")));
                                     }
-                                });
+                                })
+                                .doOnError(e -> log.error("Ошибка при авторизации для логина: " + login, e));
                     }
                 })
                 .onErrorResume(e -> {
-                    log.error("Error calling score service", e);
-                    // Если сервис score отвечает ошибкой, считаем, что score "хороший"
+                    log.error("Ошибка вызова score сервиса", e);
                     return compositionService.authorize(login, password)
                             .flatMap(authResult -> {
                                 if (authResult) {
-                                    log.error("Authorization on error -- login:" + login + " and password:" + password);
-                                    return Mono.just(ResponseEntity.ok("Authorization successful"));
+                                    log.info("Авторизация успешна для логина: " + login + " при ошибке score");
+                                    return Mono.just(ResponseEntity.ok(Map.of("message", "Authorization successful")));
                                 } else {
-                                    return Mono.just(ResponseEntity.status(403).body("Invalid credentials"));
+                                    return Mono.just(ResponseEntity.status(403)
+                                            .body(Map.of("message", "Invalid credentials")));
                                 }
                             });
                 });
     }
 }
+

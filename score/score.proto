@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option java_package = "com.danila.score";
+option java_outer_classname = "ScoreProto";
+
+service ScoreService {
+  rpc GetScore (ScoreRequest) returns (ScoreResponse);
+}
+
+message ScoreRequest {
+  string login = 1;
+}
+
+message ScoreResponse {
+  float score = 1;
+}

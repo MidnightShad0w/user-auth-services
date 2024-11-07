@@ -1,7 +1,10 @@
 syntax = "proto3";
 
+option java_multiple_files = true;
 option java_package = "com.danila.score";
 option java_outer_classname = "ScoreProto";
+
+package score;
 
 service ScoreService {
   rpc GetScore (ScoreRequest) returns (ScoreResponse);

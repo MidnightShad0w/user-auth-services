@@ -23,6 +23,40 @@ public class CompositionController {
         this.compositionService = compositionService;
     }
 
+    @PostMapping("/authorize-grpc")
+    public Mono<ResponseEntity<Map<String, String>>> authorizeUserGrpc(@RequestBody Map<String, String> credentials) {
+        String login = credentials.get("login");
+        String password = credentials.get("password");
+        float scoreThreshold = compositionService.getScoreThreshold();
+
+        return compositionService.getScoreForLoginGrpc(login)
+                .flatMap(score -> {
+                    if (score < scoreThreshold) {
+                        log.warn("Недостаточно очков: " + score + ", требуется: " + scoreThreshold);
+                        return Mono.just(ResponseEntity.status(403)
+                                .body(Map.of("message", "Authorization denied due to low score")));
+                    } else {
+                        return compositionService.authorizeGrpc(login, password)
+                                .flatMap(authResult -> {
+                                    if (authResult) {
+                                        log.info("Авторизация успешна для логина: " + login);
+                                        return Mono.just(ResponseEntity.ok(Map.of("message", "Authorization successful")));
+                                    } else {
+                                        log.warn("Авторизация не удалась для логина: " + login);
+                                        return Mono.just(ResponseEntity.status(403)
+                                                .body(Map.of("message", "Invalid credentials")));
+                                    }
+                                })
+                                .doOnError(e -> log.error("Ошибка при авторизации для логина: " + login, e));
+                    }
+                })
+                .onErrorResume(e -> {
+                    log.error("Ошибка вызова gRPC сервисов", e);
+                    return Mono.just(ResponseEntity.status(500)
+                            .body(Map.of("message", "Error during authorization")));
+                });
+    }
+
     @PostMapping("/authorize")
     public Mono<ResponseEntity<Map<String, String>>> authorizeUser(@RequestBody Map<String, String> credentials) {
         String login = credentials.get("login");

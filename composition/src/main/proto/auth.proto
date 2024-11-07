@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.danila.auth";
+option java_outer_classname = "AuthServiceProto";
+
+package auth;
+
+service AuthService {
+  rpc Authorize (AuthRequest) returns (AuthResponse);
+}
+
+message AuthRequest {
+  string login = 1;
+  string password = 2;
+}
+
+message AuthResponse {
+  bool is_authorized = 1;
+}

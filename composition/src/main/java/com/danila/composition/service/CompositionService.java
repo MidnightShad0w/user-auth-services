@@ -1,5 +1,7 @@
 package com.danila.composition.service;
 
+import com.danila.composition.grpcclient.AuthClient;
+import com.danila.composition.grpcclient.ScoreClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -24,9 +26,38 @@ public class CompositionService {
     @Value("${auth.service.url}")
     private String authServiceUrl;
 
-    public CompositionService(WebClient.Builder webClientBuilder) {
+    private final AuthClient authClient;
+    private final ScoreClient scoreClient;
+
+    public CompositionService(WebClient.Builder webClientBuilder, AuthClient authClient, ScoreClient scoreClient) {
         this.webClientBuilder = webClientBuilder;
         this.scoreThreshold = Float.parseFloat(dotenv.get("USER_SCORE_THRESHOLD"));
+        this.authClient = authClient;
+        this.scoreClient = scoreClient;
+    }
+
+    public Mono<Boolean> authorizeGrpc(String login, String password) {
+        log.warn("Проверка авторизации через gRPC для логина: " + login);
+        try {
+            boolean isAuthorized = authClient.authorize(login, password);
+            log.info("Ответ от сервиса авторизации через gRPC: " + isAuthorized);
+            return Mono.just(isAuthorized);
+        } catch (Exception e) {
+            log.error("Ошибка при авторизации через gRPC: ", e);
+            return Mono.just(false);
+        }
+    }
+
+    public Mono<Float> getScoreForLoginGrpc(String login) {
+        log.warn("Отправка gRPC запроса в score...");
+        try {
+            float score = scoreClient.getUserScore(login);
+            log.warn("Получен ответ от score_service через gRPC: " + score);
+            return Mono.just(score);
+        } catch (Exception e) {
+            log.error("Ошибка при вызове score_service через gRPC для login: " + login, e);
+            return Mono.error(e);
+        }
     }
 
     public float getScoreThreshold() {

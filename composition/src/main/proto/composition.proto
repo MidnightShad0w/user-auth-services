@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.danila.composition";
+option java_outer_classname = "CompositionServiceProto";
+
+package composition;
+
+service CompositionService {
+  rpc AuthorizeAndCheckScore (AuthorizeRequest) returns (AuthorizeResponse);
+}
+
+message AuthorizeRequest {
+  string login = 1;
+  string password = 2;
+}
+
+message AuthorizeResponse {
+  bool is_authorized = 1;
+  string message = 2;
+}

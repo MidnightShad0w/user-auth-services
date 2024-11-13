@@ -1,7 +1,7 @@
 package com.danila.composition.service;
 
-import com.danila.composition.grpcclient.AuthClient;
-import com.danila.composition.grpcclient.ScoreClient;
+import com.danila.composition.grpcclient.AuthClientGrpc;
+import com.danila.composition.grpcclient.ScoreClientGrpc;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -26,20 +26,20 @@ public class CompositionService {
     @Value("${auth.service.url}")
     private String authServiceUrl;
 
-    private final AuthClient authClient;
-    private final ScoreClient scoreClient;
+    private final AuthClientGrpc authClientGrpc;
+    private final ScoreClientGrpc scoreClientGrpc;
 
-    public CompositionService(WebClient.Builder webClientBuilder, AuthClient authClient, ScoreClient scoreClient) {
+    public CompositionService(WebClient.Builder webClientBuilder, AuthClientGrpc authClientGrpc, ScoreClientGrpc scoreClientGrpc) {
         this.webClientBuilder = webClientBuilder;
         this.scoreThreshold = Float.parseFloat(dotenv.get("USER_SCORE_THRESHOLD"));
-        this.authClient = authClient;
-        this.scoreClient = scoreClient;
+        this.authClientGrpc = authClientGrpc;
+        this.scoreClientGrpc = scoreClientGrpc;
     }
 
     public Mono<Boolean> authorizeGrpc(String login, String password) {
         log.warn("Проверка авторизации через gRPC для логина: " + login);
         try {
-            boolean isAuthorized = authClient.authorize(login, password);
+            boolean isAuthorized = authClientGrpc.authorize(login, password);
             log.info("Ответ от сервиса авторизации через gRPC: " + isAuthorized);
             return Mono.just(isAuthorized);
         } catch (Exception e) {
@@ -51,7 +51,7 @@ public class CompositionService {
     public Mono<Float> getScoreForLoginGrpc(String login) {
         log.warn("Отправка gRPC запроса в score...");
         try {
-            float score = scoreClient.getUserScore(login);
+            float score = scoreClientGrpc.getUserScore(login);
             log.warn("Получен ответ от score_service через gRPC: " + score);
             return Mono.just(score);
         } catch (Exception e) {

@@ -4,10 +4,12 @@ import com.danila.score.ScoreRequest;
 import com.danila.score.ScoreResponse;
 import com.danila.score.ScoreServiceGrpc;
 import io.grpc.stub.StreamObserver;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Service
 public class GrpcScoreServiceImpl extends ScoreServiceGrpc.ScoreServiceImplBase {
 
@@ -20,22 +22,24 @@ public class GrpcScoreServiceImpl extends ScoreServiceGrpc.ScoreServiceImplBase 
 
     @Override
     public void getUserScore(ScoreRequest request, StreamObserver<ScoreResponse> responseObserver) {
-        // Асинхронно получаем score пользователя
-        Mono<Float> scoreMono = scoreService.getUserScore(request.getLogin());
+        try {
+            log.info("Получен запрос для login: {}", request.getLogin());
+            Mono<Float> scoreMono = scoreService.getUserScore(request.getLogin());
 
-        // Подписываемся на результат score
-        scoreMono.subscribe(score -> {
-            // Создаем ответ для клиента
-            ScoreResponse response = ScoreResponse.newBuilder()
-                    .setScore(score)
-                    .build();
-
-            // Отправляем ответ и завершаем поток
-            responseObserver.onNext(response);
-            responseObserver.onCompleted();
-        }, error -> {
-            // Обработка ошибок
-            responseObserver.onError(error);
-        });
+            scoreMono.subscribe(score -> {
+                log.info("Найден score: {}", score);
+                ScoreResponse response = ScoreResponse.newBuilder()
+                        .setScore(score)
+                        .build();
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+            }, error -> {
+                log.error("Ошибка при обработке запроса: ", error);
+                responseObserver.onError(error);
+            });
+        } catch (Exception e) {
+            log.error("Необработанное исключение: ", e);
+            responseObserver.onError(e);
+        }
     }
 }

@@ -1,7 +1,7 @@
 package com.danila.composition.config;
 
-import com.danila.composition.grpcclient.AuthClient;
-import com.danila.composition.grpcclient.ScoreClient;
+import com.danila.composition.grpcclient.AuthClientGrpc;
+import com.danila.composition.grpcclient.ScoreClientGrpc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -9,12 +9,12 @@ import org.springframework.context.annotation.Configuration;
 public class GrpcClientConfig {
 
     @Bean
-    public AuthClient authClient() {
-        return new AuthClient("localhost", 9090);
+    public AuthClientGrpc authClient() {
+        return new AuthClientGrpc("localhost", 9090);
     }
 
     @Bean
-    public ScoreClient scoreClient() {
-        return new ScoreClient("localhost", 9091);
+    public ScoreClientGrpc scoreClient() {
+        return new ScoreClientGrpc("localhost", 9091);
     }
 }

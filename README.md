@@ -1,6 +1,8 @@
 The educational project includes three services where the services communicate using http
 
-Testing:
+***
+
+**Testing:**
 
 1)clone repository
 
@@ -8,7 +10,19 @@ Testing:
 
 For testing application use Postman or Insomnia.
 
-Test Requests:
+***
+
+**Test Requests:**
+
+All test request can be used for data: from user1 to user4 and from password1 to password4:
+
+user1, user2 - low score;
+
+user3 - good score;
+
+user4 - no score, but signed up;
+
+***
 
 Composition service - localhost:8082/composition/authorize 
 with body - 
@@ -27,9 +41,19 @@ with body -
 "password": "password1"
 }
 
+gRPC tests - localhost:8082/composition/authorize-grpc 
+with body -
+{
+"login": "user4",
+"password": "password4"
+}
+
+
 After posting any of this requests check logs in docker
 
-If you want to rebuild project use these commands:
+***
+
+**If you want to rebuild project use these commands:**
 
 >docker-compose down --volumes
 

@@ -28,7 +28,8 @@ services:
     container_name: score_service
     image: score_image
     ports:
-      - "8081:8081"
+      - "9091:9091" # gRPC
+#      - "8081:8081" # http
     environment:
       - SPRING_DATASOURCE_HOST=172.19.0.2
       - SPRING_DATASOURCE_PORT=5432
@@ -51,7 +52,8 @@ services:
     container_name: auth_service
     image: auth_image
     ports:
-      - "8080:8080"
+      - "9090:9090" # gRPC
+    #      - "8080:8080" # http
     environment:
       - SPRING_DATASOURCE_HOST=172.19.0.3
       - SPRING_DATASOURCE_PORT=5432

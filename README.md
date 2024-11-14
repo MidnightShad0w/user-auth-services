@@ -48,6 +48,20 @@ with body -
 "password": "password4"
 }
 
+***
+
+**Testing Traefik:**
+
+To start multiple instances run command:
+>docker-compose up -d --scale composition-service=3
+
+
+address - http://localhost/composition/authorize-grpc
+with body -
+{
+"login": "user4",
+"password": "password4"
+}
 
 After posting any of this requests check logs in docker
 

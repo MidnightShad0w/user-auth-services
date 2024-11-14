@@ -6,11 +6,11 @@ import com.danila.auth.AuthServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
-public class AuthClient {
+public class AuthClientGrpc {
 
     private final AuthServiceGrpc.AuthServiceBlockingStub authStub;
 
-    public AuthClient(String host, int port) {
+    public AuthClientGrpc(String host, int port) {
         ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
                 .usePlaintext()
                 .build();

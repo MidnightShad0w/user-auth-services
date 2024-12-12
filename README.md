@@ -72,3 +72,7 @@ After posting any of this requests check logs in docker
 >docker-compose down --volumes
 
 >docker-compose up --build -d
+
+***
+
+Swagger available on http://localhost/composition/swagger-ui/index.html

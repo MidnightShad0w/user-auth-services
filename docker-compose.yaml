@@ -28,7 +28,7 @@ services:
     labels:
       - "traefik.enable=true"   # Включение сервиса в Traefik
       - "traefik.http.routers.composition.entrypoints=web"   # Используем entrypoint web
-      - "traefik.http.routers.composition.rule=Host(`localhost`)"   # Правило маршрутизации
+      - "traefik.http.routers.composition.rule=Host(`localhost`) && PathPrefix(`/composition`)"   # Правило маршрутизации
       - "traefik.http.services.composition.loadbalancer.server.port=8082"   # Внутренний порт приложения
     depends_on:
       - score-service

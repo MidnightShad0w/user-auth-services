@@ -1,7 +1,7 @@
 FROM maven:3.8.7-eclipse-temurin-17 AS builder
 WORKDIR /app
 COPY pom.xml ./
-RUN mvn dependency:go-offline -B
+RUN mvn dependency:resolve -B
 COPY src ./src
 RUN mvn package -DskipTests
 
@@ -10,4 +10,4 @@ WORKDIR /app
 COPY ../.env .env
 COPY --from=builder /app/target/*.jar ./app.jar
 ENTRYPOINT ["java", "-jar", "./app.jar"]
-EXPOSE 8080
+EXPOSE 8082

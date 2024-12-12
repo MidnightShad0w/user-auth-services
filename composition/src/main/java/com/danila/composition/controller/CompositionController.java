@@ -1,6 +1,7 @@
 package com.danila.composition.controller;
 
 import com.danila.composition.service.CompositionService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,10 @@ public class CompositionController {
     }
 
     @PostMapping("/authorize-grpc")
+    @Operation(
+            summary = "Authorize user via gRPC",
+            description = "Authorizes a user by validating login and password, and checks score threshold. Try to use: {\"login\": \"user4\", \"password\": \"password4\"}"
+    )
     public Mono<ResponseEntity<Map<String, String>>> authorizeUserGrpc(@RequestBody Map<String, String> credentials) {
         String login = credentials.get("login");
         String password = credentials.get("password");

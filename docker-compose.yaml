@@ -1,114 +1,101 @@
 services:
-  composition_service:
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    ports:
+      - "80:80"   # HTTP порт для входящих запросов
+      - "8080:8080"   # Панель мониторинга Traefik
+    command:
+      - "--api.insecure=true"   # Включение панели мониторинга (уберите в продакшене!)
+      - "--providers.docker=true"   # Подключение к Docker как провайдеру
+      - "--providers.docker.exposedbydefault=false"   # Не экспортировать сервисы по умолчанию
+      - "--entrypoints.web.address=:80"   # Настройка entrypoint для HTTP
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock   # Для доступа к Docker API
+    networks:
+      - app-network
+
+  composition-service:
     build:
       context: ./composition
       dockerfile: Dockerfile
-    container_name: composition_service
     image: composition_image
-    ports:
-      - "8082:8082"
     environment:
-      - SCORE_SERVICE_HOST=172.19.0.4
-      - SCORE_SERVICE_PORT=8081
-      - AUTH_SERVICE_HOST=172.19.0.5
-      - AUTH_SERVICE_PORT=8080
-    env_file:
-      - composition/.env
+      - SCORE_SERVICE_HOST=score-service
+      - SCORE_SERVICE_PORT=8081 # для http
+      - AUTH_SERVICE_HOST=auth-service
+      - AUTH_SERVICE_PORT=8080 # для http
+    labels:
+      - "traefik.enable=true"   # Включение сервиса в Traefik
+      - "traefik.http.routers.composition.entrypoints=web"   # Используем entrypoint web
+      - "traefik.http.routers.composition.rule=Host(`localhost`) && PathPrefix(`/composition`)"   # Правило маршрутизации
+      - "traefik.http.services.composition.loadbalancer.server.port=8082"   # Внутренний порт приложения
     depends_on:
-      - score_service
-      - auth_service
+      - score-service
+      - auth-service
     networks:
-      app-network:
-        ipv4_address: 172.19.0.6
+      - app-network
 
-  score_service:
+  score-service:
     build:
       context: ./score
       dockerfile: Dockerfile
-    container_name: score_service
     image: score_image
-    ports:
-      - "9091:9091" # gRPC
-#      - "8081:8081" # http
+    container_name: score-service
     environment:
-      - SPRING_DATASOURCE_HOST=172.19.0.2
+      - SPRING_DATASOURCE_HOST=postgres-score
       - SPRING_DATASOURCE_PORT=5432
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=admin
     depends_on:
-      - postgres_score
+      - postgres-score
     networks:
-      app-network:
-        ipv4_address: 172.19.0.4
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres -h postgres_score" ]
-      interval: 10s
-      retries: 5
+      - app-network
 
-  auth_service:
+  auth-service:
     build:
       context: ./auth
       dockerfile: Dockerfile
-    container_name: auth_service
     image: auth_image
-    ports:
-      - "9090:9090" # gRPC
-    #      - "8080:8080" # http
+    container_name: auth-service
     environment:
-      - SPRING_DATASOURCE_HOST=172.19.0.3
+      - SPRING_DATASOURCE_HOST=postgres-auth
       - SPRING_DATASOURCE_PORT=5432
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=admin
     depends_on:
-      - postgres_auth
+      - postgres-auth
     networks:
-      app-network:
-        ipv4_address: 172.19.0.5
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres -h postgres_auth" ]
-      interval: 10s
-      retries: 5
+      - app-network
 
-  postgres_score:
+  postgres-score:
     image: postgres:17
-    container_name: postgres_score
+    container_name: postgres-score
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: score_db
     volumes:
       - postgres_score_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     networks:
-      app-network:
-        ipv4_address: 172.19.0.2
+      - app-network
 
-
-  postgres_auth:
+  postgres-auth:
     image: postgres:17
-    container_name: postgres_auth
+    container_name: postgres-auth
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: auth_db
     volumes:
       - postgres_auth_data:/var/lib/postgresql/data
-    ports:
-      - "5431:5432"
     networks:
-      app-network:
-        ipv4_address: 172.19.0.3
+      - app-network
 
 networks:
   app-network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.19.0.0/16
 
 volumes:
   postgres_score_data:
-    driver: local
   postgres_auth_data:
-    driver: local
